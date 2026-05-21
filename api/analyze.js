@@ -29,7 +29,7 @@ export default async function handler(req, res) {
   if (!videoData) return res.status(400).json({ error: 'No video data provided.' })
 
   try {
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' })
     const result = await model.generateContent([
       { inlineData: { mimeType: mediaType || 'video/mp4', data: videoData } },
       {
