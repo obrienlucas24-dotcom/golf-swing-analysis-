@@ -4,11 +4,9 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 const C = {
   green:      '#1a3a2a',
   greenLight: '#2d5a3d',
-  greenMid:   '#234d35',
   cream:      '#f5f0e8',
   creamDark:  '#ede8df',
   gold:       '#c9a84c',
-  goldLight:  '#d4b96a',
   text:       '#1a1a1a',
   muted:      '#6b7280',
   error:      '#dc2626',
@@ -17,48 +15,44 @@ const C = {
   white:      '#ffffff',
 }
 
-const MAX_SIZE = 200 * 1024 * 1024 // 200MB — Gemini File API supports up to 2GB
+const MAX_SIZE = 20 * 1024 * 1024 // 20MB frontend gate
 
 // ─── Tips data ────────────────────────────────────────────────────────────────
 const TIPS_DATA = [
   {
-    category: 'Stance',
-    icon: '🦵',
+    category: 'Stance', icon: '🦵',
     tips: [
       { title: 'Shoulder-Width Foundation', body: 'Position feet shoulder-width apart for irons, slightly wider for driver. This creates the stable base needed for consistent ball striking through impact.' },
-      { title: 'Parallel Alignment', body: 'Align feet, hips, and shoulders parallel to your target line. Think railroad tracks — ball on one rail, your body on the other. Even tour pros check this daily.' },
-      { title: 'Athletic Knee Flex', body: 'Soften your knees as if sitting back onto a bar stool. Too straight or too bent both rob you of power and stability through the swing arc.' },
-      { title: 'Ball Position by Club', body: 'Play the ball forward off the left heel for driver, work it progressively back toward center as clubs get shorter. 7-iron sits just ahead of center.' },
+      { title: 'Parallel Alignment', body: 'Align feet, hips, and shoulders parallel to your target line. Think railroad tracks — ball on one rail, your body on the other.' },
+      { title: 'Athletic Knee Flex', body: 'Soften your knees as if sitting back onto a bar stool. Too straight or too bent both rob you of power and stability.' },
+      { title: 'Ball Position by Club', body: 'Play the ball forward off the left heel for driver, work it progressively back toward center as clubs get shorter.' },
     ],
   },
   {
-    category: 'Grip',
-    icon: '✋',
+    category: 'Grip', icon: '✋',
     tips: [
-      { title: 'The Handshake Principle', body: 'Hold the club like a firm handshake — controlled but not crushing. Excess grip pressure is the #1 killer of club head speed for amateurs.' },
-      { title: "Neutral V's", body: "Both thumbs and forefingers form V's pointing toward your right shoulder (right-handed). This neutral grip gives you the best chance of a square face at impact." },
-      { title: 'Finger Pressure', body: 'Feel the grip primarily in your fingers, not your palm. The last three fingers of your lead hand are your anchor and control point throughout the swing.' },
-      { title: 'Consistent Pressure', body: 'Maintain the same light-to-medium grip pressure from address through follow-through. Many amateurs tighten at the top — this kills lag and speed.' },
+      { title: 'The Handshake Principle', body: 'Hold the club like a firm handshake — controlled but not crushing. Excess grip pressure is the #1 killer of club head speed.' },
+      { title: "Neutral V's", body: "Both thumbs and forefingers form V's pointing toward your right shoulder. This neutral grip gives you the best chance of a square face at impact." },
+      { title: 'Finger Pressure', body: 'Feel the grip primarily in your fingers, not your palm. The last three fingers of your lead hand are your anchor.' },
+      { title: 'Consistent Pressure', body: 'Maintain the same grip pressure from address through follow-through. Many amateurs tighten at the top — this kills lag and speed.' },
     ],
   },
   {
-    category: 'Swing Path',
-    icon: '🏌️',
+    category: 'Swing Path', icon: '🏌️',
     tips: [
-      { title: 'Inside-Out Attack', body: 'Swing on an inside-out path through impact to eliminate the slice. Imagine swinging toward right field (right-handers) — this promotes the draw spin that adds distance.' },
-      { title: 'Full Shoulder Turn', body: 'Rotate your lead shoulder under your chin on the backswing — a full 90° turn is the goal. This creates maximum coil and potential energy to release through the ball.' },
-      { title: 'Hip-Led Downswing', body: 'Initiate the downswing with your hips firing toward the target. Let the arms follow naturally — the sequence is hips, shoulders, arms, club. Never lead with your hands.' },
-      { title: 'Maintain Lag', body: 'Keep the angle between your arms and club shaft as long as possible on the downswing. Release that angle through the impact zone — not before — for maximum speed.' },
+      { title: 'Inside-Out Attack', body: 'Swing on an inside-out path through impact to eliminate the slice. Imagine swinging toward right field — this promotes draw spin that adds distance.' },
+      { title: 'Full Shoulder Turn', body: 'Rotate your lead shoulder under your chin on the backswing — a full 90° turn creates maximum coil and power.' },
+      { title: 'Hip-Led Downswing', body: 'Initiate the downswing with your hips. The sequence is hips, shoulders, arms, club. Never lead with your hands.' },
+      { title: 'Maintain Lag', body: 'Keep the angle between your arms and club shaft as long as possible on the downswing. Release through impact — not before.' },
     ],
   },
   {
-    category: 'Mental Game',
-    icon: '🧠',
+    category: 'Mental Game', icon: '🧠',
     tips: [
-      { title: 'Pre-Shot Routine', body: "Develop and commit to a consistent pre-shot routine for every single shot. It anchors focus and signals your brain that it's time to execute, not think." },
-      { title: 'Target, Not Mechanics', body: 'Once you step into address, focus only on your target. Mechanics belong on the practice range. On the course, trust your training and see the shot.' },
-      { title: 'Embrace Imperfection', body: 'Tour pros hit bad shots every round. Your emotional response to bad shots defines your score more than the shots themselves. Reset and move on.' },
-      { title: 'Breathe & Release', body: 'Take one full, deep breath before each shot. This lowers heart rate, relaxes grip tension, and clears mental noise. It takes 4 seconds and costs nothing.' },
+      { title: 'Pre-Shot Routine', body: "Develop a consistent pre-shot routine for every shot. It anchors focus and signals your brain it's time to execute, not think." },
+      { title: 'Target, Not Mechanics', body: 'Once at address, focus only on your target. Mechanics belong on the range. On the course, trust your training.' },
+      { title: 'Embrace Imperfection', body: 'Tour pros hit bad shots every round. Your response to bad shots defines your score more than the shots themselves.' },
+      { title: 'Breathe & Release', body: 'Take one deep breath before each shot. This lowers heart rate, relaxes grip tension, and clears mental noise.' },
     ],
   },
 ]
@@ -82,56 +76,71 @@ const ratingColor = (r) => {
   return C.error
 }
 
-// Upload video directly to Gemini File API from the browser
-async function uploadToGemini(file, apiKey, onProgress) {
-  const CHUNK = 8 * 1024 * 1024 // 8MB chunks
-  const total = file.size
+// Compress video by extracting frames and re-encoding via canvas
+async function compressVideo(file, onProgress) {
+  return new Promise((resolve, reject) => {
+    const video = document.createElement('video')
+    const url = URL.createObjectURL(file)
+    video.src = url
+    video.muted = true
+    video.playsInline = true
 
-  // Initiate resumable upload
-  const initRes = await fetch(
-    `https://generativelanguage.googleapis.com/upload/v1beta/files?uploadType=resumable&key=${apiKey}`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Goog-Upload-Protocol': 'resumable',
-        'X-Goog-Upload-Command': 'start',
-        'X-Goog-Upload-Header-Content-Length': total,
-        'X-Goog-Upload-Header-Content-Type': file.type,
-      },
-      body: JSON.stringify({ file: { display_name: file.name } }),
-    }
-  )
-  if (!initRes.ok) throw new Error('Failed to initiate upload')
-  const uploadUrl = initRes.headers.get('X-Goog-Upload-URL')
-  if (!uploadUrl) throw new Error('No upload URL returned')
+    video.onloadedmetadata = () => {
+      const canvas = document.createElement('canvas')
+      // Scale down to max 480p
+      const scale = Math.min(1, 480 / video.videoHeight, 854 / video.videoWidth)
+      canvas.width  = Math.round(video.videoWidth  * scale)
+      canvas.height = Math.round(video.videoHeight * scale)
+      const ctx = canvas.getContext('2d')
 
-  // Upload in chunks
-  let offset = 0
-  let fileUri = null
-  while (offset < total) {
-    const chunk = file.slice(offset, offset + CHUNK)
-    const isLast = offset + chunk.size >= total
-    const uploadRes = await fetch(uploadUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Length': chunk.size,
-        'X-Goog-Upload-Offset': offset,
-        'X-Goog-Upload-Command': isLast ? 'upload, finalize' : 'upload',
-      },
-      body: chunk,
-    })
-    if (!uploadRes.ok) throw new Error('Chunk upload failed')
-    offset += chunk.size
-    if (onProgress) onProgress(Math.round((offset / total) * 100))
-    if (isLast) {
-      const data = await uploadRes.json()
-      fileUri = data?.file?.uri
+      const chunks = []
+      let recorder
+      try {
+        recorder = new MediaRecorder(canvas.captureStream(15), {
+          mimeType: 'video/webm;codecs=vp8',
+          videoBitsPerSecond: 800_000,
+        })
+      } catch {
+        // fallback if webm not supported — just send original
+        URL.revokeObjectURL(url)
+        return resolve(file)
+      }
+
+      recorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data) }
+      recorder.onstop = () => {
+        URL.revokeObjectURL(url)
+        const blob = new Blob(chunks, { type: 'video/webm' })
+        // only use compressed if it's actually smaller
+        resolve(blob.size < file.size ? blob : file)
+      }
+
+      recorder.start()
+      video.currentTime = 0
+      video.play()
+
+      const duration = video.duration
+      const drawFrame = () => {
+        if (video.ended || video.currentTime >= duration) {
+          recorder.stop()
+          return
+        }
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
+        if (onProgress) onProgress(Math.round((video.currentTime / duration) * 50))
+        requestAnimationFrame(drawFrame)
+      }
+      video.onplay = () => requestAnimationFrame(drawFrame)
     }
-  }
-  if (!fileUri) throw new Error('Upload complete but no file URI returned')
-  return fileUri
+    video.onerror = () => { URL.revokeObjectURL(url); resolve(file) }
+  })
 }
+
+const readAsBase64 = (blob) =>
+  new Promise((resolve, reject) => {
+    const r = new FileReader()
+    r.onload = () => resolve(r.result.split(',')[1])
+    r.onerror = reject
+    r.readAsDataURL(blob)
+  })
 
 // ─── ScoreRing ────────────────────────────────────────────────────────────────
 function ScoreRing({ score, animate = false, size = 148 }) {
@@ -143,12 +152,10 @@ function ScoreRing({ score, animate = false, size = 148 }) {
   useEffect(() => {
     if (!animate) { setDisplayed(score); return }
     let start = null
-    const duration = 1100
     const step = (ts) => {
       if (!start) start = ts
-      const p = Math.min((ts - start) / duration, 1)
-      const eased = 1 - Math.pow(1 - p, 3)
-      setDisplayed(Math.round(eased * score))
+      const p = Math.min((ts - start) / 1100, 1)
+      setDisplayed(Math.round((1 - Math.pow(1 - p, 3)) * score))
       if (p < 1) requestAnimationFrame(step)
     }
     const id = requestAnimationFrame(step)
@@ -158,13 +165,8 @@ function ScoreRing({ score, animate = false, size = 148 }) {
   return (
     <svg width={size} height={size} viewBox="0 0 132 132">
       <circle cx="66" cy="66" r={radius} fill="none" stroke={C.greenLight} strokeWidth="10" />
-      <circle
-        cx="66" cy="66" r={radius}
-        fill="none" stroke={C.gold} strokeWidth="10" strokeLinecap="round"
-        strokeDasharray={circ} strokeDashoffset={offset}
-        transform="rotate(-90 66 66)"
-        style={{ transition: animate ? 'none' : 'stroke-dashoffset 0.5s ease' }}
-      />
+      <circle cx="66" cy="66" r={radius} fill="none" stroke={C.gold} strokeWidth="10" strokeLinecap="round"
+        strokeDasharray={circ} strokeDashoffset={offset} transform="rotate(-90 66 66)" />
       <text x="66" y="60" textAnchor="middle" fill={C.gold} fontSize="30" fontWeight="800" fontFamily="-apple-system,sans-serif">{displayed}</text>
       <text x="66" y="76" textAnchor="middle" fill={C.cream} fontSize="11" fontFamily="-apple-system,sans-serif" opacity="0.85">{scoreLabel(displayed)}</text>
       <text x="66" y="91" textAnchor="middle" fill={C.cream} fontSize="10" fontFamily="-apple-system,sans-serif" opacity="0.45">out of 100</text>
@@ -172,7 +174,6 @@ function ScoreRing({ score, animate = false, size = 148 }) {
   )
 }
 
-// ─── Skeleton ─────────────────────────────────────────────────────────────────
 function SkeletonCard({ lines = 3 }) {
   return (
     <div style={{ background: C.white, borderRadius: 16, overflow: 'hidden', marginBottom: 14, boxShadow: '0 2px 10px rgba(0,0,0,0.05)' }}>
@@ -188,13 +189,12 @@ function SkeletonCard({ lines = 3 }) {
   )
 }
 
-// ─── Card ─────────────────────────────────────────────────────────────────────
 function Card({ title, icon, children }) {
   return (
     <div style={{ background: C.white, borderRadius: 18, overflow: 'hidden', marginBottom: 14, boxShadow: '0 2px 14px rgba(0,0,0,0.06)' }}>
       <div style={{ background: C.green, padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 8 }}>
         {icon && <span style={{ fontSize: 15 }}>{icon}</span>}
-        <span style={{ color: C.cream, fontWeight: 700, fontSize: 14, letterSpacing: '0.01em' }}>{title}</span>
+        <span style={{ color: C.cream, fontWeight: 700, fontSize: 14 }}>{title}</span>
       </div>
       <div style={{ padding: '18px' }}>{children}</div>
     </div>
@@ -205,7 +205,7 @@ function PhaseRow({ phase }) {
   const color = ratingColor(phase.rating)
   return (
     <div style={{ marginBottom: 18, paddingBottom: 18, borderBottom: `1px solid ${C.creamDark}` }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
         <span style={{ fontWeight: 600, fontSize: 14, color: C.text }}>{phase.name}</span>
         <span style={{ fontWeight: 700, fontSize: 14, color }}>{phase.rating}/10</span>
       </div>
@@ -229,9 +229,7 @@ function BodyItem({ label, value }) {
 function TipItem({ tip, index }) {
   return (
     <div style={{ display: 'flex', gap: 12, marginBottom: 16, paddingBottom: 16, borderBottom: `1px solid ${C.creamDark}` }}>
-      <div style={{ width: 28, height: 28, borderRadius: '50%', background: C.gold, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 800, color: C.green }}>
-        {index + 1}
-      </div>
+      <div style={{ width: 28, height: 28, borderRadius: '50%', background: C.gold, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 800, color: C.green }}>{index + 1}</div>
       <p style={{ fontSize: 13, color: C.text, margin: 0, lineHeight: 1.6 }}>{tip}</p>
     </div>
   )
@@ -239,15 +237,11 @@ function TipItem({ tip, index }) {
 
 function ErrorBanner({ msg, onRetry }) {
   return (
-    <div style={{ background: C.errorBg, border: `1px solid ${C.errorBorder}`, borderRadius: 14, padding: '14px 16px', marginBottom: 16, display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+    <div style={{ background: C.errorBg, border: `1px solid ${C.errorBorder}`, borderRadius: 14, padding: '14px 16px', marginBottom: 16, display: 'flex', gap: 10 }}>
       <span style={{ fontSize: 16, flexShrink: 0 }}>⚠️</span>
       <div style={{ flex: 1 }}>
         <p style={{ margin: 0, fontSize: 13, color: C.error, lineHeight: 1.5 }}>{msg}</p>
-        {onRetry && (
-          <button onClick={onRetry} style={{ marginTop: 10, padding: '8px 18px', borderRadius: 50, background: C.error, color: C.white, border: 'none', fontWeight: 700, fontSize: 12, cursor: 'pointer' }}>
-            Try Again
-          </button>
-        )}
+        {onRetry && <button onClick={onRetry} style={{ marginTop: 10, padding: '8px 18px', borderRadius: 50, background: C.error, color: C.white, border: 'none', fontWeight: 700, fontSize: 12, cursor: 'pointer' }}>Try Again</button>}
       </div>
     </div>
   )
@@ -255,24 +249,22 @@ function ErrorBanner({ msg, onRetry }) {
 
 // ─── AnalyzeScreen ────────────────────────────────────────────────────────────
 function AnalyzeScreen({ history, setHistory }) {
-  const [phase, setPhase] = useState('upload')
+  const [phase, setPhase]       = useState('upload')
   const [videoFile, setVideoFile] = useState(null)
-  const [videoUrl, setVideoUrl] = useState(null)
-  const [analysis, setAnalysis] = useState(null)
-  const [error, setError] = useState('')
-  const [uploadProgress, setUploadProgress] = useState(0)
-  const [loadingMsg, setLoadingMsg] = useState('Uploading video…')
+  const [videoUrl, setVideoUrl]   = useState(null)
+  const [analysis, setAnalysis]   = useState(null)
+  const [error, setError]         = useState('')
+  const [loadingMsg, setLoadingMsg] = useState('')
+  const [progress, setProgress]   = useState(0)
   const fileRef = useRef(null)
 
   const handleFile = useCallback((file) => {
     if (!file) return
     if (!file.type.startsWith('video/')) {
-      setError('Please upload a valid video file (MP4, MOV, etc.)')
-      setPhase('error'); return
+      setError('Please upload a valid video file (MP4, MOV, etc.)'); setPhase('error'); return
     }
     if (file.size > MAX_SIZE) {
-      setError(`Video must be under 200 MB. Your file is ${(file.size / 1024 / 1024).toFixed(1)} MB.`)
-      setPhase('error'); return
+      setError(`Please use a video under 20 MB. Yours is ${(file.size / 1024 / 1024).toFixed(1)} MB — try trimming to under 30 seconds.`); setPhase('error'); return
     }
     setError('')
     setVideoFile(file)
@@ -282,39 +274,38 @@ function AnalyzeScreen({ history, setHistory }) {
 
   const handleAnalyze = useCallback(async () => {
     if (!videoFile) return
-    setPhase('loading')
-    setUploadProgress(0)
-    setLoadingMsg('Uploading video to AI…')
-    setError('')
+    setPhase('loading'); setError(''); setProgress(0)
 
     try {
-      // Step 1: upload video directly to Gemini File API
-      const apiKey = import.meta.env.VITE_GEMINI_API_KEY
-      if (!apiKey) throw new Error('Gemini API key not configured (VITE_GEMINI_API_KEY)')
+      let blob = videoFile
+      // Compress if over 3MB
+      if (videoFile.size > 3 * 1024 * 1024) {
+        setLoadingMsg('Compressing video…')
+        blob = await compressVideo(videoFile, setProgress)
+      }
 
-      const fileUri = await uploadToGemini(videoFile, apiKey, (pct) => {
-        setUploadProgress(pct)
-        setLoadingMsg(`Uploading… ${pct}%`)
-      })
+      setLoadingMsg('Sending to coach…')
+      setProgress(60)
+      const videoData = await readAsBase64(blob)
+      setProgress(75)
 
-      // Step 2: send just the URI to our serverless function
-      setLoadingMsg('Analyzing your swing…')
       const res = await fetch('/api/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fileUri, mediaType: videoFile.type }),
+        body: JSON.stringify({ videoData, mediaType: blob.type || videoFile.type }),
       })
+
+      setProgress(90)
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
         throw new Error(err.error || `Server error ${res.status}`)
       }
+
       const data = await res.json()
+      setProgress(100)
       setAnalysis(data)
       setPhase('results')
-      setHistory((prev) => [{
-        id: Date.now(), timestamp: Date.now(),
-        score: data.score, summary: data.summary || '', analysis: data,
-      }, ...prev].slice(0, 20))
+      setHistory((prev) => [{ id: Date.now(), timestamp: Date.now(), score: data.score, summary: data.summary || '', analysis: data }, ...prev].slice(0, 20))
     } catch (e) {
       setError(e.message || 'Analysis failed. Please try again.')
       setPhase('error')
@@ -322,13 +313,9 @@ function AnalyzeScreen({ history, setHistory }) {
   }, [videoFile, setHistory])
 
   const reset = useCallback(() => {
-    setPhase('upload')
-    setVideoFile(null)
+    setPhase('upload'); setVideoFile(null)
     if (videoUrl) URL.revokeObjectURL(videoUrl)
-    setVideoUrl(null)
-    setAnalysis(null)
-    setError('')
-    setUploadProgress(0)
+    setVideoUrl(null); setAnalysis(null); setError(''); setProgress(0)
   }, [videoUrl])
 
   return (
@@ -340,23 +327,18 @@ function AnalyzeScreen({ history, setHistory }) {
       </div>
 
       <div style={{ padding: '20px 16px 24px' }}>
-
         {(phase === 'upload' || phase === 'error') && (
           <div className="fade-in-fast">
             {error && <ErrorBanner msg={error} onRetry={reset} />}
             <input ref={fileRef} type="file" accept="video/*" capture="environment" style={{ display: 'none' }} onChange={(e) => handleFile(e.target.files?.[0])} />
-            <button
-              onClick={() => fileRef.current?.click()}
-              style={{ width: '100%', minHeight: 190, background: C.white, border: `2px dashed ${C.greenLight}`, borderRadius: 22, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 14, cursor: 'pointer', marginBottom: 24 }}
-            >
+            <button onClick={() => fileRef.current?.click()} style={{ width: '100%', minHeight: 190, background: C.white, border: `2px dashed ${C.greenLight}`, borderRadius: 22, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 14, cursor: 'pointer', marginBottom: 24 }}>
               <div style={{ width: 68, height: 68, borderRadius: '50%', background: C.green, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 30 }}>🎥</div>
               <div style={{ textAlign: 'center' }}>
                 <p style={{ margin: 0, fontWeight: 700, fontSize: 17, color: C.green }}>Upload Your Swing</p>
-                <p style={{ margin: '4px 0 0', fontSize: 13, color: C.muted }}>Up to 200 MB · MP4, MOV, any format</p>
+                <p style={{ margin: '4px 0 0', fontSize: 13, color: C.muted }}>MP4, MOV · under 20 MB · ~30 sec clip</p>
               </div>
               <div style={{ background: C.green, color: C.cream, padding: '13px 32px', borderRadius: 50, fontSize: 14, fontWeight: 700 }}>Choose Video</div>
             </button>
-
             {history.length > 0 && (
               <div>
                 <p style={{ fontSize: 11, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.07em', margin: '0 0 12px' }}>Recent Swings</p>
@@ -379,9 +361,7 @@ function AnalyzeScreen({ history, setHistory }) {
         {phase === 'preview' && videoUrl && (
           <div className="fade-in-fast">
             <video src={videoUrl} controls playsInline style={{ width: '100%', borderRadius: 18, maxHeight: 300, background: '#000', marginBottom: 16, objectFit: 'contain', display: 'block' }} />
-            <p style={{ fontSize: 12, color: C.muted, textAlign: 'center', margin: '0 0 16px' }}>
-              {videoFile?.name} · {(videoFile?.size / 1024 / 1024).toFixed(1)} MB
-            </p>
+            <p style={{ fontSize: 12, color: C.muted, textAlign: 'center', margin: '0 0 16px' }}>{videoFile?.name} · {(videoFile?.size / 1024 / 1024).toFixed(1)} MB</p>
             <div style={{ display: 'flex', gap: 10 }}>
               <button onClick={reset} style={{ flex: 1, padding: '15px 0', borderRadius: 50, border: `2px solid ${C.green}`, background: 'transparent', color: C.green, fontWeight: 600, fontSize: 15, cursor: 'pointer', minHeight: 52 }}>Change</button>
               <button onClick={handleAnalyze} style={{ flex: 2.2, padding: '15px 0', borderRadius: 50, background: C.green, color: C.cream, fontWeight: 700, fontSize: 15, border: 'none', cursor: 'pointer', minHeight: 52 }}>Analyze Swing ⛳</button>
@@ -394,20 +374,15 @@ function AnalyzeScreen({ history, setHistory }) {
             {videoUrl && <video src={videoUrl} playsInline muted style={{ width: '100%', borderRadius: 18, maxHeight: 220, background: '#000', marginBottom: 18, objectFit: 'contain', display: 'block' }} />}
             <div style={{ textAlign: 'center', padding: '18px 0 10px' }}>
               <div className="pulse-spin" style={{ width: 46, height: 46, border: `4px solid ${C.creamDark}`, borderTopColor: C.gold, borderRadius: '50%', margin: '0 auto 14px' }} />
-              <p style={{ fontWeight: 700, fontSize: 17, color: C.green, margin: 0 }}>{loadingMsg}</p>
-              {uploadProgress > 0 && uploadProgress < 100 && (
-                <div style={{ margin: '14px auto 0', maxWidth: 220 }}>
-                  <div style={{ height: 4, background: C.creamDark, borderRadius: 2 }}>
-                    <div style={{ height: '100%', width: `${uploadProgress}%`, background: C.gold, borderRadius: 2, transition: 'width 0.3s' }} />
-                  </div>
+              <p style={{ fontWeight: 700, fontSize: 17, color: C.green, margin: 0 }}>{loadingMsg || 'Analyzing…'}</p>
+              <div style={{ margin: '14px auto 0', maxWidth: 220 }}>
+                <div style={{ height: 4, background: C.creamDark, borderRadius: 2 }}>
+                  <div style={{ height: '100%', width: `${progress}%`, background: C.gold, borderRadius: 2, transition: 'width 0.4s' }} />
                 </div>
-              )}
-              {uploadProgress === 100 && <p style={{ fontSize: 13, color: C.muted, marginTop: 6 }}>Your PGA coach is reviewing every frame…</p>}
+              </div>
             </div>
             <div style={{ marginTop: 20 }}>
-              <SkeletonCard lines={2} />
-              <SkeletonCard lines={5} />
-              <SkeletonCard lines={3} />
+              <SkeletonCard lines={2} /><SkeletonCard lines={5} /><SkeletonCard lines={3} />
             </div>
           </div>
         )}
@@ -415,31 +390,15 @@ function AnalyzeScreen({ history, setHistory }) {
         {phase === 'results' && analysis && (
           <div className="fade-in">
             {videoUrl && <video src={videoUrl} controls playsInline style={{ width: '100%', borderRadius: 18, maxHeight: 220, background: '#000', marginBottom: 16, objectFit: 'contain', display: 'block' }} />}
-
             <div style={{ background: C.green, borderRadius: 22, padding: '28px 24px 24px', marginBottom: 14, textAlign: 'center', boxShadow: '0 6px 24px rgba(26,58,42,0.28)' }}>
               <p style={{ color: C.cream, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.09em', margin: '0 0 18px', opacity: 0.65 }}>Overall Swing Score</p>
               <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 18 }}><ScoreRing score={analysis.score} animate /></div>
               {analysis.summary && <p style={{ color: C.cream, fontSize: 13, lineHeight: 1.65, margin: 0, opacity: 0.88 }}>{analysis.summary}</p>}
             </div>
-
-            {analysis.phases?.length > 0 && (
-              <Card title="Phase Breakdown" icon="📊">
-                {analysis.phases.map((p, i) => <PhaseRow key={i} phase={p} />)}
-              </Card>
-            )}
-            {analysis.bodyPosition && Object.keys(analysis.bodyPosition).length > 0 && (
-              <Card title="Body Position Analysis" icon="🏌️">
-                {Object.entries(analysis.bodyPosition).map(([k, v]) => <BodyItem key={k} label={k.replace(/([A-Z])/g, ' $1').trim()} value={v} />)}
-              </Card>
-            )}
-            {analysis.tips?.length > 0 && (
-              <Card title="Coach's Top Tips" icon="💡">
-                {analysis.tips.map((t, i) => <TipItem key={i} tip={t} index={i} />)}
-              </Card>
-            )}
-            <button onClick={reset} style={{ width: '100%', padding: '15px 0', borderRadius: 50, background: C.green, color: C.cream, fontWeight: 700, fontSize: 15, border: 'none', cursor: 'pointer', marginTop: 8, minHeight: 52 }}>
-              Analyze Another Swing
-            </button>
+            {analysis.phases?.length > 0 && <Card title="Phase Breakdown" icon="📊">{analysis.phases.map((p, i) => <PhaseRow key={i} phase={p} />)}</Card>}
+            {analysis.bodyPosition && <Card title="Body Position Analysis" icon="🏌️">{Object.entries(analysis.bodyPosition).map(([k, v]) => <BodyItem key={k} label={k.replace(/([A-Z])/g, ' $1').trim()} value={v} />)}</Card>}
+            {analysis.tips?.length > 0 && <Card title="Coach's Top Tips" icon="💡">{analysis.tips.map((t, i) => <TipItem key={i} tip={t} index={i} />)}</Card>}
+            <button onClick={reset} style={{ width: '100%', padding: '15px 0', borderRadius: 50, background: C.green, color: C.cream, fontWeight: 700, fontSize: 15, border: 'none', cursor: 'pointer', marginTop: 8, minHeight: 52 }}>Analyze Another Swing</button>
           </div>
         )}
       </div>
@@ -450,34 +409,30 @@ function AnalyzeScreen({ history, setHistory }) {
 // ─── HistoryScreen ────────────────────────────────────────────────────────────
 function HistoryScreen({ history, setHistory }) {
   const [selected, setSelected] = useState(null)
-
   if (selected) {
     return (
       <div>
         <div style={{ background: C.green, padding: '54px 20px 22px', display: 'flex', alignItems: 'center', gap: 14 }}>
-          <button onClick={() => setSelected(null)} style={{ background: 'none', border: 'none', color: C.cream, fontSize: 22, cursor: 'pointer', padding: '8px', minWidth: 44, minHeight: 44, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>←</button>
+          <button onClick={() => setSelected(null)} style={{ background: 'none', border: 'none', color: C.cream, fontSize: 22, cursor: 'pointer', minWidth: 44, minHeight: 44, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>←</button>
           <div>
             <h2 style={{ color: C.gold, fontSize: 20, fontWeight: 800, margin: 0 }}>Swing Details</h2>
             <p style={{ color: C.cream, fontSize: 12, margin: '2px 0 0', opacity: 0.65 }}>{fmtDate(selected.timestamp)}</p>
           </div>
         </div>
         <div style={{ padding: '20px 16px 24px' }} className="fade-in">
-          <div style={{ background: C.green, borderRadius: 22, padding: '26px 24px', marginBottom: 14, textAlign: 'center', boxShadow: '0 4px 20px rgba(26,58,42,0.22)' }}>
+          <div style={{ background: C.green, borderRadius: 22, padding: '26px 24px', marginBottom: 14, textAlign: 'center' }}>
             <p style={{ color: C.cream, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.09em', margin: '0 0 16px', opacity: 0.65 }}>Overall Score</p>
-            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: selected.summary ? 16 : 0 }}><ScoreRing score={selected.score} /></div>
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16 }}><ScoreRing score={selected.score} /></div>
             {selected.summary && <p style={{ color: C.cream, fontSize: 13, lineHeight: 1.6, margin: 0, opacity: 0.88 }}>{selected.summary}</p>}
           </div>
           {selected.analysis?.phases?.length > 0 && <Card title="Phase Breakdown" icon="📊">{selected.analysis.phases.map((p, i) => <PhaseRow key={i} phase={p} />)}</Card>}
           {selected.analysis?.bodyPosition && <Card title="Body Position" icon="🏌️">{Object.entries(selected.analysis.bodyPosition).map(([k, v]) => <BodyItem key={k} label={k.replace(/([A-Z])/g, ' $1').trim()} value={v} />)}</Card>}
           {selected.analysis?.tips?.length > 0 && <Card title="Coach's Tips" icon="💡">{selected.analysis.tips.map((t, i) => <TipItem key={i} tip={t} index={i} />)}</Card>}
-          <button onClick={() => { if (window.confirm('Delete this swing?')) { setHistory((p) => p.filter((h) => h.id !== selected.id)); setSelected(null) } }} style={{ width: '100%', padding: '14px 0', borderRadius: 50, border: `2px solid ${C.errorBorder}`, background: 'transparent', color: C.error, fontWeight: 600, fontSize: 14, cursor: 'pointer', marginTop: 4 }}>
-            Delete This Swing
-          </button>
+          <button onClick={() => { if (window.confirm('Delete this swing?')) { setHistory((p) => p.filter((h) => h.id !== selected.id)); setSelected(null) } }} style={{ width: '100%', padding: '14px 0', borderRadius: 50, border: `2px solid ${C.errorBorder}`, background: 'transparent', color: C.error, fontWeight: 600, fontSize: 14, cursor: 'pointer', marginTop: 4 }}>Delete This Swing</button>
         </div>
       </div>
     )
   }
-
   return (
     <div>
       <div style={{ background: C.green, padding: '54px 24px 28px' }}>
@@ -489,7 +444,7 @@ function HistoryScreen({ history, setHistory }) {
           <div style={{ textAlign: 'center', padding: '64px 24px' }}>
             <div style={{ fontSize: 52, marginBottom: 16 }}>🏌️</div>
             <p style={{ fontWeight: 700, fontSize: 18, color: C.green, margin: 0 }}>No swings yet</p>
-            <p style={{ fontSize: 14, color: C.muted, marginTop: 8, lineHeight: 1.5 }}>Upload your first swing to start tracking your progress</p>
+            <p style={{ fontSize: 14, color: C.muted, marginTop: 8 }}>Upload your first swing to start tracking progress</p>
           </div>
         ) : history.map((h) => (
           <button key={h.id} onClick={() => setSelected(h)} style={{ width: '100%', background: C.white, border: 'none', borderRadius: 18, padding: '16px', display: 'flex', alignItems: 'center', gap: 14, marginBottom: 12, cursor: 'pointer', boxShadow: '0 2px 12px rgba(0,0,0,0.07)', textAlign: 'left', minHeight: 80 }}>
@@ -497,7 +452,6 @@ function HistoryScreen({ history, setHistory }) {
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontWeight: 700, fontSize: 15, color: C.text }}>Golf Swing</div>
               <div style={{ fontSize: 12, color: C.muted, marginTop: 2 }}>{fmtDate(h.timestamp)}</div>
-              {h.summary && <div style={{ fontSize: 12, color: C.muted, marginTop: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{h.summary}</div>}
             </div>
             <div style={{ textAlign: 'right', flexShrink: 0 }}>
               <div style={{ fontSize: 26, fontWeight: 800, color: C.gold, lineHeight: 1 }}>{h.score}</div>
@@ -544,7 +498,7 @@ function TipsScreen() {
 
 // ─── ProfileScreen ────────────────────────────────────────────────────────────
 function ProfileScreen({ history }) {
-  const avgScore = history.length ? Math.round(history.reduce((s, h) => s + h.score, 0) / history.length) : null
+  const avg  = history.length ? Math.round(history.reduce((s, h) => s + h.score, 0) / history.length) : null
   const best = history.length ? Math.max(...history.map((h) => h.score)) : null
   const trend = history.length >= 2 ? history[0].score - history[history.length - 1].score : null
   return (
@@ -556,7 +510,7 @@ function ProfileScreen({ history }) {
       </div>
       <div style={{ padding: '20px 16px 24px' }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 20 }}>
-          {[{ label: 'Sessions', value: history.length || '0' }, { label: 'Avg Score', value: avgScore ?? '—' }, { label: 'Best', value: best ?? '—' }].map((s) => (
+          {[{ label: 'Sessions', value: history.length || '0' }, { label: 'Avg Score', value: avg ?? '—' }, { label: 'Best', value: best ?? '—' }].map((s) => (
             <div key={s.label} style={{ background: C.white, borderRadius: 16, padding: '16px 10px', textAlign: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
               <div style={{ fontSize: 24, fontWeight: 800, color: C.gold }}>{s.value}</div>
               <div style={{ fontSize: 11, color: C.muted, marginTop: 3 }}>{s.label}</div>
@@ -570,15 +524,7 @@ function ProfileScreen({ history }) {
           </div>
         )}
         <Card title="About SwingAI" icon="ℹ️">
-          <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.65, margin: 0 }}>SwingAI uses advanced AI vision to analyze your golf swing frame by frame, providing expert-level feedback powered by Google Gemini. Upload any swing video and receive a full breakdown in seconds.</p>
-        </Card>
-        <Card title="How It Works" icon="⚙️">
-          {[['📱','Upload video from your camera roll'],['🤖','AI analyzes swing mechanics frame by frame'],['📊','Receive a detailed phase-by-phase breakdown'],['💡','Get personalized coaching tips to improve']].map(([icon, text]) => (
-            <div key={text} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', marginBottom: 12 }}>
-              <span style={{ fontSize: 16 }}>{icon}</span>
-              <span style={{ fontSize: 13, color: C.muted, lineHeight: 1.5 }}>{text}</span>
-            </div>
-          ))}
+          <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.65, margin: 0 }}>SwingAI uses Google Gemini AI to analyze your golf swing frame by frame, providing expert-level PGA coaching feedback. Upload any swing video and receive a full breakdown in seconds.</p>
         </Card>
       </div>
     </div>
@@ -614,7 +560,6 @@ export default function App() {
     catch { return [] }
   })
   useEffect(() => { localStorage.setItem('swingai_history', JSON.stringify(history)) }, [history])
-
   return (
     <div style={{ background: C.cream, minHeight: '100vh', maxWidth: 430, margin: '0 auto', position: 'relative', overflowX: 'hidden', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif' }}>
       <div style={{ paddingBottom: 76 }}>
