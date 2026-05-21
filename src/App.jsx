@@ -17,7 +17,7 @@ const C = {
   white:      '#ffffff',
 }
 
-const MAX_SIZE = 50 * 1024 * 1024 // 50 MB
+const MAX_SIZE = 4 * 1024 * 1024 // 4 MB — Vercel free plan proxy limit
 
 // ─── Tips data ────────────────────────────────────────────────────────────────
 const TIPS_DATA = [
@@ -241,7 +241,7 @@ function AnalyzeScreen({ history, setHistory }) {
       return
     }
     if (file.size > MAX_SIZE) {
-      setError(`Video must be under 50 MB. Your file is ${(file.size / 1024 / 1024).toFixed(1)} MB.`)
+      setError(`Video must be under 4 MB. Your file is ${(file.size / 1024 / 1024).toFixed(1)} MB. Try trimming to a shorter clip (5–10 seconds works best).`)
       setPhase('error')
       return
     }
